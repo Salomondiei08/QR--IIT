@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "78719472813",
+    "project_id": "qr-iit",
+    "storage_bucket": "qr-iit.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:78719472813:android:ea0a05eb14a9bbbdcba224",
+        "android_client_info": {
+          "package_name": "com.rreinventlabs.qr_iit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "78719472813-3uhkvuferd04uo9btltlvk8jafffs4s9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeM_q6ZJiI09WaVp2J3DPO29et31SE2pE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "78719472813-3uhkvuferd04uo9btltlvk8jafffs4s9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
