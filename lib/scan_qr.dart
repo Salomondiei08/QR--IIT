@@ -44,19 +44,21 @@ class _ScanQRState extends State<ScanQR> {
       body: SafeArea(
         child: Column(
           children: [
-             Expanded(
+            Expanded(
               flex: 1,
-              child: 
-              (result != null)
-                    ?  Text(
-                       result!.code!,
-                        style: const TextStyle(color: Colors.white, fontSize: 24),
-                      )
-                      
-                    : const Text('Scan a code', style: TextStyle(color: Colors.white, fontSize: 24,),
-              ),
-              ),
-            
+              child: (result != null)
+                  ? Text(
+                      isOk ? result!.code! : 'Code QR incorrect',
+                      style: const TextStyle(color: Colors.white, fontSize: 24),
+                    )
+                  : const Text(
+                      'Scan a code',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                      ),
+                    ),
+            ),
             Expanded(
               flex: 14,
               child: Padding(
@@ -87,13 +89,31 @@ class _ScanQRState extends State<ScanQR> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
-        if (result != null) {
+        if ((result != null || result == "") &&
+            result!.code!.startsWith('IIT')) {
           isOk = true;
           _addQrData(result!);
+          result = null;
+
           print(result!.code);
+        } else {
+          print('Valeur nulle');
+          isOk = false;
+          
+          Future.delayed(Duration(seconds: 1), () {
+           resetValues();
+
+          });
+          
         }
-        print('Valeur nulle');
       });
+    });
+  }
+
+  void resetValues() {
+    setState(() {
+      result = null;
+       isOk = true;
     });
   }
 
@@ -109,17 +129,15 @@ class _ScanQRState extends State<ScanQR> {
     attendance
         .add({
           'heure': DateFormat.yMMMMEEEEd().format(DateTime.now()),
-      'name': 'salomon diei',
-      'presence' : true,
+          'name': data.code!,
+          'presence': true,
         })
         .then((value) => print("User Added"))
         .catchError((error) {
-      print("Failed to add user: $error");
-      setState(() {
-        isOk = false;
-      });
-    });
+          print("Failed to add user: $error");
+          setState(() {
+            isOk = false;
+          });
+        });
   }
 }
-
-
