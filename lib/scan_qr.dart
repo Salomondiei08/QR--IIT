@@ -89,12 +89,10 @@ class _ScanQRState extends State<ScanQR> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
-        if ((result != null || result == "") &&
+        if ((result != null || result!.code != "") &&
             result!.code!.startsWith('IIT')) {
           isOk = true;
           _addQrData(result!);
-          result = null;
-
           print(result!.code);
         } else {
           print('Valeur nulle');
