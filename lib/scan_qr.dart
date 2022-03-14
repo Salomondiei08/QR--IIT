@@ -99,6 +99,15 @@ class _ScanQRState extends State<ScanQR> {
         try {
           decryptedResults =
               encrypter.decrypt(Encrypted.fromBase64(scanData.code!), iv: iv);
+              
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(decryptedResults),
+              duration: Duration(seconds: 5),
+            ),
+          );
+
+          print(decryptedResults);
         } catch (e) {
           print('Unexpected Error');
           isOk = false;
