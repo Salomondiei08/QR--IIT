@@ -1,18 +1,21 @@
+import 'package:encrypt/encrypt.dart' as encrypt;
+import 'package:encrypt/encrypt.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/src/provider.dart';
 
+import 'authentication_servies.dart';
 import 'scan_qr.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordCoontroller = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +44,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       TextFormField(
-                        controller: _passwordCoontroller,
+                        controller: _passwordController,
                         decoration: const InputDecoration(
                           labelText: "Enter your password",
                         ),
@@ -52,11 +55,19 @@ class _HomePageState extends State<HomePage> {
               ),
 
               TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const ScanQR(),
-                  ),
-                ),
+                onPressed: () {
+                  context.read<AuthenticationService>().signIn(
+                        email: _emailController.text.trim(),
+                        password: _passwordController.text.trim(),
+                      );
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>  ScanQR(),
+                    ),
+                  );
+                },
                 child: Text(
                   "Login",
                   style: TextStyle(color: Colors.indigo[900]),
@@ -66,11 +77,12 @@ class _HomePageState extends State<HomePage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                   shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Colors.indigo),
+                    side: const BorderSide(color: Colors.indigo),
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
               ),
+
             ],
           ),
         ),

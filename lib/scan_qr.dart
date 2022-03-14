@@ -1,16 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
+import 'package:encrypt/encrypt.dart';
 import 'package:flutter/material.dart';
+import 'package:encrypt/encrypt.dart' as encrypt;
 
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-import 'main.dart';
-
 class ScanQR extends StatefulWidget {
-  const ScanQR({Key? key}) : super(key: key);
-
   @override
   _ScanQRState createState() => _ScanQRState();
 }
@@ -23,11 +17,14 @@ class _ScanQRState extends State<ScanQR> {
 // FirebaseFirestore firestore = FirebaseFirestore.instanceFor(app: QR_IIT);
 
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+
   Barcode? result;
   QRViewController? controller;
+  String decryptedResults = "";
 
-  // In order to get hot reload to work we need to pause the camera if the platform
-  // is android, or resume the camera if the platform is iOS.
+  final _key = encrypt.Key.fromUtf8('01234567890123456789012345678901');
+  final iv = encrypt.IV.fromLength(16);
+  var isOk = true;
 
   @override
   void reassemble() {
@@ -35,7 +32,13 @@ class _ScanQRState extends State<ScanQR> {
     controller!.pauseCamera();
   }
 
-  var isOk = true;
+  late Encrypter encrypter;
+
+  @override
+  void initState() {
+    super.initState();
+    encrypter = encrypt.Encrypter(encrypt.AES(_key, mode: encrypt.AESMode.ecb));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +51,13 @@ class _ScanQRState extends State<ScanQR> {
               flex: 1,
               child: (result != null)
                   ? Text(
-                      isOk ? result!.code! : 'Code QR incorrect',
+                      isOk
+                          ? decryptedResults.split('//')[2]
+                          : 'Code QR incorrect',
                       style: const TextStyle(color: Colors.white, fontSize: 24),
                     )
                   : const Text(
-                      'Scan a code',
+                      'Scan your QR code',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,
@@ -86,23 +91,29 @@ class _ScanQRState extends State<ScanQR> {
 
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
+
     controller.scannedDataStream.listen((scanData) {
       setState(() {
+        print('Decrypting data...');
         result = scanData;
-        if ((result != null || result!.code != "") &&
-            result!.code!.startsWith('IIT')) {
+        try {
+          decryptedResults =
+              encrypter.decrypt(Encrypted.fromBase64(scanData.code!), iv: iv);
+        } catch (e) {
+          print('Unexpected Error');
+          isOk = false;
+        }
+        if (decryptedResults != "" && decryptedResults.startsWith('IIT')) {
           isOk = true;
-          _addQrData(result!);
-          print(result!.code);
+          _addQrData(decryptedResults);
+          print(decryptedResults);
         } else {
           print('Valeur nulle');
           isOk = false;
-          
-          Future.delayed(const Duration(seconds: 1), () {
-           resetValues();
 
+          Future.delayed(const Duration(seconds: 1), () {
+            resetValues();
           });
-          
         }
       });
     });
@@ -111,7 +122,7 @@ class _ScanQRState extends State<ScanQR> {
   void resetValues() {
     setState(() {
       result = null;
-       isOk = true;
+      isOk = true;
     });
   }
 
@@ -121,21 +132,25 @@ class _ScanQRState extends State<ScanQR> {
     super.dispose();
   }
 
-  void _addQrData(Barcode data) {
-    CollectionReference attendance =
-        FirebaseFirestore.instance.collection('attendance');
-    attendance
-        .add({
-          'heure': DateFormat.yMMMMEEEEd().format(DateTime.now()),
-          'name': data.code!,
-          'presence': true,
-        })
-        .then((value) => print("User Added"))
-        .catchError((error) {
-          print("Failed to add user: $error");
-          setState(() {
-            isOk = false;
-          });
-        });
+  void _addQrData(String data) {
+    List<String> attendanceData = data.split('//');
+
+    String studentData = attendanceData[4];
+
+    // CollectionReference attendance =
+    //     FirebaseFirestore.instance.collection('attendance');
+    // attendance
+    //     .add({
+    //       'heure': DateFormat.yMMMMEEEEd().format(DateTime.now()),
+    //       'matricule': studentData,
+    //       'presence': true,
+    //     })
+    //     .then((value) => print("User Added"))
+    //     .catchError((error) {
+    //       print("Failed to add user: $error");
+    //       setState(() {
+    //         isOk = false;
+    //       });
+    //     });
   }
 }
